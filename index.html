@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Color Picker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: rgba(30, 30, 50, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            max-width: 800px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #e2e8f0;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .picker-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .color-display {
+            grid-column: 1 / -1;
+            height: 40px;
+            border-radius: 4px;
+            border: 2px solid #3a3a5c;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls-group {
+            background: rgba(50, 50, 70, 0.6);
+            padding: 25px;
+            border-radius: 6px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .controls-group h3 {
+            margin-bottom: 20px;
+            color: #cbd5e0;
+            font-size: 1.2rem;
+        }
+
+        .color-picker-wrapper {
+            text-align: center;
+        }
+
+        .color-picker {
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .color-picker:hover {
+            transform: scale(1.05);
+        }
+
+        .hex-input {
+            margin-top: 15px;
+        }
+
+        .hex-input input {
+			color: white;
+            width: 120px;
+            padding: 10px;
+            border: 2px solid #667eeaff;
+			background: #2e2e2e;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 16px;
+            font-family: monospace;
+            transition: border-color 0.3s ease;
+        }
+
+        .hex-input input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .slider-group {
+            margin-bottom: 20px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #cbd5e0;
+        }
+
+        .slider-value {
+            background: rgba(20, 20, 40, 0.8);
+            color: #e2e8f0;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-family: monospace;
+            min-width: 40px;
+            text-align: center;
+            border: 1px solid #3a3a5c;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            outline: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .info-section {
+            background: rgba(50, 50, 70, 0.6);
+            padding: 25px;
+            border-radius: 6px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-section h3 {
+            margin-bottom: 15px;
+            color: #cbd5e0;
+            font-size: 1.2rem;
+        }
+
+        .color-values {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .value-item {
+            background: rgba(20, 20, 40, 0.8);
+            padding: 5px;
+            border-radius: 4px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease;
+            border: 1px solid #3a3a5c;
+        }
+
+        .value-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .value-label {
+            font-weight: bold;
+            color: #a0aec0;
+            margin-bottom: 5px;
+        }
+
+        .value-text {
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: #e2e8f0;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 3px;
+            transition: background-color 0.2s ease;
+        }
+
+        .value-text:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .picker-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Interactive Color Picker</h1>
+        
+        <div class="color-display" id="colorDisplay"></div>
+        
+        <div class="picker-section">
+            <div class="controls-group">
+                <h3>Color Picker & Hex Input</h3>
+                <div class="color-picker-wrapper">
+                    <input type="color" class="color-picker" id="colorPicker" value="#667eea">
+                    <div class="hex-input">
+                        <input type="text" id="hexInput" placeholder="#667eeaff" maxlength="9">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls-group">
+                <h3>RGBA Sliders</h3>
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Red</span>
+                        <span class="slider-value" id="redValue">102</span>
+                    </div>
+                    <input type="range" class="slider red-slider" id="redSlider" min="0" max="255" value="102">
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Green</span>
+                        <span class="slider-value" id="greenValue">126</span>
+                    </div>
+                    <input type="range" class="slider green-slider" id="greenSlider" min="0" max="255" value="126">
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Blue</span>
+                        <span class="slider-value" id="blueValue">234</span>
+                    </div>
+                    <input type="range" class="slider blue-slider" id="blueSlider" min="0" max="255" value="234">
+                </div>
+                
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Alpha</span>
+                        <span class="slider-value" id="alphaValue">1.00</span>
+                    </div>
+                    <input type="range" class="slider alpha-slider" id="alphaSlider" min="0" max="100" value="100">
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-section">
+            <h3>Color Values</h3>
+            <div class="color-values">
+                <div class="value-item">
+                    <div class="value-label">HEX (RGBA)</div>
+                    <div class="value-text" id="hexValue" onclick="copyToClipboard(this)">#667eea</div>
+                </div>
+                <div class="value-item">
+                    <div class="value-label">HEX (ARGB)</div>
+                    <div class="value-text" id="argbHexValue" onclick="copyToClipboard(this)">#ff667eea</div>
+                </div>
+                <div class="value-item">
+                    <div class="value-label">RGB</div>
+                    <div class="value-text" id="rgbValue" onclick="copyToClipboard(this)">rgb(102, 126, 234)</div>
+                </div>
+                <div class="value-item">
+                    <div class="value-label">RGBA</div>
+                    <div class="value-text" id="rgbaValue" onclick="copyToClipboard(this)">rgba(102, 126, 234, 1.00)</div>
+                </div>
+                <div class="value-item">
+                    <div class="value-label">ARGB</div>
+                    <div class="value-text" id="argbValue" onclick="copyToClipboard(this)">argb(255, 102, 126, 234)</div>
+                </div>
+                <div class="value-item">
+                    <div class="value-label">HSL</div>
+                    <div class="value-text" id="hslValue" onclick="copyToClipboard(this)">hsl(229, 76%, 66%)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get DOM elements
+        const colorPicker = document.getElementById('colorPicker');
+        const hexInput = document.getElementById('hexInput');
+        const colorDisplay = document.getElementById('colorDisplay');
+        const redSlider = document.getElementById('redSlider');
+        const greenSlider = document.getElementById('greenSlider');
+        const blueSlider = document.getElementById('blueSlider');
+        const alphaSlider = document.getElementById('alphaSlider');
+        const redValue = document.getElementById('redValue');
+        const greenValue = document.getElementById('greenValue');
+        const blueValue = document.getElementById('blueValue');
+        const alphaValue = document.getElementById('alphaValue');
+        const hexValue = document.getElementById('hexValue');
+        const argbHexValue = document.getElementById('argbHexValue');
+        const rgbValue = document.getElementById('rgbValue');
+        const rgbaValue = document.getElementById('rgbaValue');
+        const argbValue = document.getElementById('argbValue');
+        const hslValue = document.getElementById('hslValue');
+
+        // Utility functions
+        function componentToHex(c) {
+            const hex = c.toString(16);
+            return hex.length == 1 ? "0" + hex : hex;
+        }
+
+        function rgbToHex(r, g, b, a = 1) {
+            const hex = "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+            if (a < 1) {
+                const alphaHex = componentToHex(Math.round(a * 255));
+                return hex + alphaHex;
+            }
+            return hex;
+        }
+
+        function rgbToArgbHex(r, g, b, a = 1) {
+            const alphaHex = componentToHex(Math.round(a * 255));
+            return "#" + alphaHex + componentToHex(r) + componentToHex(g) + componentToHex(b);
+        }
+
+        function hexToRgb(hex) {
+            // Handle both 6-digit and 8-digit hex codes (RGBA and ARGB)
+            const fullHex = hex.replace('#', '');
+            
+            if (fullHex.length === 6) {
+                const result = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fullHex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16),
+                    a: 1
+                } : null;
+            } else if (fullHex.length === 8) {
+                // Try RGBA format first (#RRGGBBAA)
+                const rgbaResult = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fullHex);
+                if (rgbaResult) {
+                    // Check if this looks like ARGB by seeing if first value is high (common for alpha)
+                    const firstValue = parseInt(rgbaResult[1], 16);
+                    const lastValue = parseInt(rgbaResult[4], 16);
+                    
+                    // If first value is much higher than others, assume ARGB format
+                    if (firstValue > 200 && (parseInt(rgbaResult[2], 16) < 128 && parseInt(rgbaResult[3], 16) < 128)) {
+                        // ARGB format (#AARRGGBB)
+                        return {
+                            r: parseInt(rgbaResult[2], 16),
+                            g: parseInt(rgbaResult[3], 16),
+                            b: parseInt(rgbaResult[4], 16),
+                            a: firstValue / 255
+                        };
+                    } else {
+                        // RGBA format (#RRGGBBAA)
+                        return {
+                            r: parseInt(rgbaResult[1], 16),
+                            g: parseInt(rgbaResult[2], 16),
+                            b: parseInt(rgbaResult[3], 16),
+                            a: lastValue / 255
+                        };
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        function rgbToHsl(r, g, b) {
+            r /= 255;
+            g /= 255;
+            b /= 255;
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+
+            if (max === min) {
+                h = s = 0;
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+
+            return {
+                h: Math.round(h * 360),
+                s: Math.round(s * 100),
+                l: Math.round(l * 100)
+            };
+        }
+
+        function updateDisplay() {
+            const r = parseInt(redSlider.value);
+            const g = parseInt(greenSlider.value);
+            const b = parseInt(blueSlider.value);
+            const a = parseFloat(alphaSlider.value) / 100;
+
+            // Update slider value displays
+            redValue.textContent = r;
+            greenValue.textContent = g;
+            blueValue.textContent = b;
+            alphaValue.textContent = a.toFixed(2);
+
+            // Update color display
+            const rgba = `rgba(${r}, ${g}, ${b}, ${a})`;
+            colorDisplay.style.backgroundColor = rgba;
+
+            // Update color values
+            const hex = rgbToHex(r, g, b, a);
+            const argbHex = rgbToArgbHex(r, g, b, a);
+            const hexNoAlpha = rgbToHex(r, g, b);
+            const rgb = `rgb(${r}, ${g}, ${b})`;
+            const rgbaStr = `rgba(${r}, ${g}, ${b}, ${a.toFixed(2)})`;
+            const argbStr = `argb(${Math.round(a * 255)}, ${r}, ${g}, ${b})`;
+            const hsl = rgbToHsl(r, g, b);
+            const hslStr = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+
+            hexValue.textContent = hex;
+            argbHexValue.textContent = argbHex;
+            rgbValue.textContent = rgb;
+            rgbaValue.textContent = rgbaStr;
+            argbValue.textContent = argbStr;
+            hslValue.textContent = hslStr;
+
+            // Update color picker and hex input (color picker doesn't support alpha)
+            colorPicker.value = hexNoAlpha;
+            hexInput.value = hex;
+        }
+
+        function updateFromHex(hex) {
+            const rgb = hexToRgb(hex);
+            if (rgb) {
+                redSlider.value = rgb.r;
+                greenSlider.value = rgb.g;
+                blueSlider.value = rgb.b;
+                alphaSlider.value = Math.round(rgb.a * 100);
+                updateDisplay();
+            }
+        }
+
+        // Event listeners
+        colorPicker.addEventListener('input', (e) => {
+            updateFromHex(e.target.value);
+        });
+
+        hexInput.addEventListener('input', (e) => {
+            const hex = e.target.value;
+            if (/^#[0-9A-F]{6}$/i.test(hex) || /^#[0-9A-F]{8}$/i.test(hex)) {
+                updateFromHex(hex);
+            }
+        });
+
+        redSlider.addEventListener('input', updateDisplay);
+        greenSlider.addEventListener('input', updateDisplay);
+        blueSlider.addEventListener('input', updateDisplay);
+        alphaSlider.addEventListener('input', updateDisplay);
+
+        // Copy to clipboard function
+        function copyToClipboard(element) {
+            const text = element.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                element.style.backgroundColor = '#d4edda';
+                setTimeout(() => {
+                    element.style.backgroundColor = '';
+                }, 200);
+            });
+        }
+
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html>
